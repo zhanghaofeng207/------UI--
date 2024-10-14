@@ -19,9 +19,9 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
-      <el-form-item label="科室名称" prop="dpId">
+      <el-form-item label="科室名称" prop="dpName">
         <el-input
-          v-model="queryParams.dpId"
+          v-model="queryParams.dpName"
           placeholder="请输入科室名称"
           clearable
           size="small"
@@ -82,10 +82,10 @@
 
     <el-table v-loading="loading" :data="itemList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column label="项目id" align="center" prop="itemId" />
+      
       <el-table-column label="项目名称" align="center" prop="itemName" />
       <el-table-column label="项目价格" align="center" prop="itemPrice" />
-      <el-table-column label="科室名称" align="center" prop="dpId" />
+      <el-table-column label="科室名称" align="center" prop="dpName" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -123,9 +123,16 @@
         <el-form-item label="项目价格" prop="itemPrice">
           <el-input v-model="form.itemPrice" placeholder="请输入项目价格" />
         </el-form-item>
-        <el-form-item label="科室名称" prop="dpId">
-          <el-input v-model="form.dpId" placeholder="请输入科室名称" />
-        </el-form-item>
+        <el-form-item label="科室名称" prop="dpName">
+  <el-select v-model="form.dpName" placeholder="请选择科室名称">
+    <el-option
+      v-for="department in departments"
+      :key="department.dpId"
+      :label="department.dpName"
+      :value="department.dpName"
+    />
+  </el-select>
+</el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -137,6 +144,7 @@
 
 <script>
 import { listItem, getItem, delItem, addItem, updateItem, exportItem } from "@/api/smh/item";
+import { listDepartment } from '@/api/smh/department'; // 确保路径 
 
 export default {
   name: "Item",
@@ -162,13 +170,16 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      
+      departments: [], // 新增：用于存储科室数据  
+
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         itemName: null,
         itemPrice: null,
-        dpId: null
+        dpName: null
       },
       // 表单参数
       form: {},
@@ -180,7 +191,7 @@ export default {
         itemPrice: [
           { required: true, message: "项目价格不能为空", trigger: "blur" }
         ],
-        dpId: [
+        dpName: [
           { required: true, message: "科室名称不能为空", trigger: "blur" }
         ]
       }
@@ -188,6 +199,7 @@ export default {
   },
   created() {
     this.getList();
+    this.getDepartments(); // 新增的代码
   },
   methods: {
     /** 查询项目管理列表 */
@@ -210,7 +222,7 @@ export default {
         itemId: null,
         itemName: null,
         itemPrice: null,
-        dpId: null
+        dpName: null
       };
       this.resetForm("form");
     },
@@ -292,7 +304,15 @@ export default {
         }).then(response => {
           this.download(response.msg);
         })
-    }
+    },
+    getDepartments(){
+      this.loading = true;
+      listDepartment(this.queryParams).then(response => {
+        this.departments = response.rows;
+        console.log(this.departments);
+        this.loading = false;
+      });
+    },
   }
 };
 </script>

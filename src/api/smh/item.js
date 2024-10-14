@@ -51,3 +51,11 @@ export function exportItem(query) {
     params: query
   })
 }
+
+// 查询科室列表
+export function listDepartments() {
+  return request({
+    url: '/smh/health_department/list', // 假设这是获取科室列表的正确API路径
+    method: 'get'
+  });
+}
